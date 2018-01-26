@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <title>Add | GeoPost</title>
+
+        <script type="text/javascript" src="cordova.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="https://bootswatch.com/3/united/bootstrap.css">
+
+		<script type="text/javascript">
+
+			var session_id, myusername;
+
+			$(document).ready(function(){
+
+				session_id = localStorage.getItem("session_id");
+				myusername = localStorage.getItem("myusername");
+				console.log("session_id: "+session_id);
+				console.log("myusername: "+myusername);
+
+				$("#myInput").keyup(function(){
+
+					console.log("myButton premuto");
+					console.log($("#myInput").val());
+
+					$.ajax({
+						url : "https://ewserver.di.unimi.it/mobicomp/geopost/users?session_id="+session_id+"&usernamestart="+$("#myInput").val()+"&limit=5&callback=callback",
+						jsonp : "callback",
+						dataType : "jsonp",
+						success : function (result) {
+							console.log(result);
+
+							var myString = "";
+							i=0;
+
+							for (item in result.usernames) {
+								console.log("username: "+result.usernames[item]);
+								tempusername = result.usernames[item];
+
+								if ( tempusername.localeCompare(myusername) ) {
+									myString += "<li class='list-group-item'>"+result.usernames[item]+" <button id='button' class='btn btn-primary btn-xs'>follow "+result.usernames[item]+"</button> </li>";
+								} // if
+								
+							} // for
+							
+							$("#myDiv").html(myString);
+
+						},
+						error : function(req, status, err){
+
+							alert("Errore: controlla la connessione a internet");
+
+							// req: tutto l'errore
+							// status: stampa error
+							// err: stampa Bad Request
+						}
+					}); // ajax
+
+				}); // keyup
+
+				// https://www.tutorialrepublic.com/codelab.php?topic=faq&file=jquery-bind-click-event-to-dynamically-created-elements
+				$(document).on("click", "#button" , function() {
+					var x = $(this).parent().find('button').html();
+					console.log(x);
+
+					var y = x.split(" ");
+					console.log(y);
+
+					var username = y[1];
+					console.log(y[1]);
+
+					/* AJAX
+					============================================================*/
+
+					var url = "https://ewserver.di.unimi.it/mobicomp/geopost/follow?session_id="+session_id+"&username="+username+"&callback=callback";
+
+					$.ajax({
+						type : 'get',
+						url : url,
+						context : this,
+						success : function(result) {
+							alert("Ok, ora segui "+username);							
+						},
+						error : function(req, status, err){
+
+							if (req.responseText=="CANNOT FOLLOW YOURSELF")
+								alert("Non puoi seguire te stesso");
+							else if (req.responseText=="ALREADY FOLLOWING USER")
+								alert("Segui già questo utente");
+							else
+								alert("Errore: controlla la connessione a internet");
+
+							// req: tutto l'errore
+							// status: stampa error
+							// err: stampa Bad Request
+						}
+					}); // ajax
+
+		        });
+
+			}); // ready
+
+		</script>
+
+		<style type="text/css">
+			body{
+				padding-top: 60px;
+			}
+		</style>
+
+    </head>
+    <body>
+
+    	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid"><div class="navbar-header">
+
+		<a class="navbar-brand" href="#">GeoPost > Add</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+	       	<span class="icon-bar"></span>
+	       	<span class="icon-bar"></span>
+	    	<span class="icon-bar"></span>
+	    </button>
+		</div>
+
+		<div class="navbar-collapse collapse" id="navbar-main">
+		    <ul class="nav navbar-nav">
+
+		    	<li><button onclick="window.location.href='map.html'" class="btn btn-primary btn-block "><h4>Map <span class="glyphicon glyphicon-globe" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='list.html'" class="btn btn-primary btn-block "><h4>List <span class="glyphicon glyphicon-tasks" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='post.html'" class="btn btn-primary btn-block "><h4>Post <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='add.html'" class="btn btn-primary btn-block active"><h4>Add <span class="glyphicon glyphicon-search" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='profile.html'" class="btn btn-primary btn-block"><h4>Profile <span class="glyphicon glyphicon-user" aria-hidden="true"></span></h4></button></li>
+		    	
+		    </ul>
+		</div>
+
+		</div></nav>
+
+		<div class="container-fluid">
+			
+			<input id="myInput" class="form-control" type="text" name="nomeUtente" placeholder="enter username" required="">
+
+			<div id="myDiv"></div>
+
+		</div>
+        
+    </body>
+</html>

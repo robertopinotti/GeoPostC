@@ -1,0 +1,11 @@
+{
+  "background_color": "#FFF",
+  "display": "standalone",
+  "name": "GeoPost",
+  "short_name": "GeoPost",
+  "version": "io.cordova.hellocordova",
+  "description": "Yolo App",
+  "author": "Roberto Pinotti",
+  "icons": [],
+  "start_url": "index.html"
+}

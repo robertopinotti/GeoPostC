@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <title>Profile | GeoPost</title>
+
+        <script type="text/javascript" src="cordova.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="https://bootswatch.com/3/united/bootstrap.css">
+
+		<script type="text/javascript">
+
+			var session_id;
+
+			/* MAPPA
+			============================================================*/
+
+			function myMap(){
+				console.log("myMap"); // debug
+				console.log("response: "+ response.username); // debug
+				
+				var marker;
+
+				// map
+				var myLatLng = {lat: response.lat, lng: response.lon};
+				var map = new google.maps.Map(document.getElementById("map"), {
+					zoom: 15,
+					center: myLatLng
+				});
+
+				var contentString = "<h5>"+response.username+"</h5><p>"+response.msg+"</p>"
+				// marker
+				marker = new google.maps.Marker({
+					position: {lat: response.lat, lng: response.lon},
+					map: map,
+					title: contentString
+				});
+
+				var infowindow = new google.maps.InfoWindow({
+					content: contentString
+				});
+
+				marker.addListener('click', function() {
+				    infowindow.close();
+				    infowindow.setContent(this.title);
+				    infowindow.open(map, this);
+				});
+
+			}
+
+			/* AJAX
+			============================================================*/
+
+			var response;
+
+			function ajax(){
+
+				$.ajax({
+
+					url : "https://ewserver.di.unimi.it/mobicomp/geopost/profile?session_id="+session_id+"&callback=callback",
+					success : function(result) {
+
+						console.log("ajax: "+result.username+" "+result.msg);
+
+						$("#username").html("Hi, "+result.username);
+
+						response = result;
+
+						myMap();
+						
+					},
+					error : function(req, status, err){
+
+						alert("Errore: controlla la connessione a internet");
+
+						// req: tutto l'errore
+						// status: stampa error
+						// err: stampa Bad Request
+					}
+				}); // ajax
+
+			}
+
+			$(document).ready(function(){
+
+				session_id = localStorage.getItem("session_id");
+				console.log("session_id: "+session_id);
+
+				ajax();
+
+				/* LOGOUT
+				============================================================*/
+
+				$("#button").click(function(){
+					console.log("button");
+
+					$.ajax({
+						
+						url : "https://ewserver.di.unimi.it/mobicomp/geopost/logout?session_id="+session_id+"&callback=callback",
+						success : function(result) {
+
+							localStorage.clear();
+							console.log("session_id: "+localStorage.getItem("session_id"));
+							window.location.href = "index.html";
+
+						},
+						error : function(req, status, err){
+
+							alert("Errore: controlla la connessione a internet");
+
+							// req: tutto l'errore
+							// status: stampa error
+							// err: stampa Bad Request
+						}
+					}); // ajax
+
+				}); // button
+
+			}); // ready
+
+		</script>
+
+		<style type="text/css">
+			#map{
+				width:100%;	
+				height: 300px;
+				background-color: #f5f5f5;
+			}
+			body{
+				padding-top: 60px;
+			}
+
+			@media screen and (orientation: landscape){
+				#utente {
+					float: left;
+					width: 45%;
+				}
+				#mappa {
+					float: right;
+					width: 50%;
+				}
+				#map {
+					height: 200px;
+				}
+			}
+
+		</style>
+
+    </head>
+    <body>
+
+    	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid"><div class="navbar-header">
+
+		<a class="navbar-brand" href="#">GeoPost > Profile</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+	       	<span class="icon-bar"></span>
+	       	<span class="icon-bar"></span>
+	    	<span class="icon-bar"></span>
+	    </button>
+		</div>
+
+		<div class="navbar-collapse collapse" id="navbar-main">
+		    <ul class="nav navbar-nav">
+
+		    	<li><button onclick="window.location.href='map.html'" class="btn btn-primary btn-block "><h4>Map <span class="glyphicon glyphicon-globe" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='list.html'" class="btn btn-primary btn-block "><h4>List <span class="glyphicon glyphicon-tasks" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='post.html'" class="btn btn-primary btn-block "><h4>Post <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='add.html'" class="btn btn-primary btn-block "><h4>Add <span class="glyphicon glyphicon-search" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='profile.html'" class="btn btn-primary btn-block active"><h4>Profile <span class="glyphicon glyphicon-user" aria-hidden="true"></span></h4></button></li>
+		    	
+		    </ul>
+		</div>
+
+		</div></nav>
+
+		<div class="container-fluid"><div class="row">
+
+			<div id="utente"><div class="col-sm-6">
+
+		        <h2><div id="username"></div></h2>
+		        <button id="button" class="btn btn-primary btn-block">logout</button><br/>
+
+			</div></div>
+			
+			<div id="mappa"><div class="col-sm-6">
+
+				<div id="map">loading...</div>
+
+			</div></div>
+
+		</div></div>
+
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKNYNx2KTbuIjJ49faWy90x0Pq7m8p1Ik"></script>
+
+		<!-- https://maps.googleapis.com/maps/api/js?key=AIzaSyCKNYNx2KTbuIjJ49faWy90x0Pq7m8p1Ik&callback=myMap -->
+        
+    </body>
+</html>

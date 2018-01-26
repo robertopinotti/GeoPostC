@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <title>Map | GeoPost</title>
+
+        <script type="text/javascript" src="cordova.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="https://bootswatch.com/3/united/bootstrap.css">
+
+		<script type="text/javascript">
+
+			var session_id, myLat=0.0, myLon=0.0;
+
+			// Wait for device API libraries to load
+		    document.addEventListener("deviceready", onDeviceReady, false);
+
+		    function onDeviceReady() {
+		    	console.log("onDeviceReady()");
+		        prendiPosizione();
+		    }
+
+		    function prendiPosizione(){
+
+            	var options = {
+                	enableHighAccuracy: true,
+                    timeout: 10*1000,
+                    maximumAge: 50*1000
+                };
+
+                if (navigator.geolocation) {
+                	console.log("if (navigator.geolocation)");
+                	navigator.geolocation.getCurrentPosition(onSuccess, error, options);
+                } else {
+                  	console.log("Geolocation is not supported by this browser.");
+                }
+
+                function onSuccess(position) {
+                	myLat = position.coords.latitude;
+                    myLon = position.coords.longitude;
+                    // alert("onSuccess: "+myLat+" "+myLon);
+                    // utentePos = new Position(myLat, myLon);
+
+                    ajax(); // solo quando ho la mia posizione carico la lista
+                }
+
+                function error(error) {
+                  	console.log("onError()");
+		        	alert('code: '    + error.code    + '\n' +
+		              'message: ' + error.message + '\n');
+              	}
+
+            } // prendiPosizione()
+
+
+
+
+
+
+
+			/* DOCUMENT READY
+			============================================================*/
+
+			$(document).ready(function(){
+
+				session_id = localStorage.getItem("session_id");
+				console.log("session_id: "+session_id);
+
+				// ajax();
+
+			});
+
+			/* AJAX
+			============================================================*/
+
+			function ajax(){
+
+				console.log("ajax");
+
+				$.ajax({
+
+					// https://ewserver.di.unimi.it/mobicomp/geopost/followed?session_id=SESSION_ID&callback=callback
+					url : "https://ewserver.di.unimi.it/mobicomp/geopost/followed?session_id="+session_id+"&callback=callback",
+					success : function(result) {
+
+						for (item of result.followed) {
+							if (item.lat!=null) {	// aggiungo solo quelli che hanno una lat/lon valida
+								var friend = new Friend(item.username, item.msg, item.lat, item.lon);
+								addFriend(friend);
+							}
+						} // for
+						
+						myMap();
+
+					},
+					error : function(req, status, err){
+
+						alert("Errore: controlla la connessione a internet");
+
+						// req: tutto l'errore
+						// status: stampa error
+						// err: stampa Bad Request
+					}
+
+				}); // ajax
+
+			} // function ajax
+
+			/* MAPPA
+			============================================================*/
+
+			function myMap(){
+				console.log("myMap"); // debug
+
+				var marker;
+
+				// map
+				// alert(myLat+" "+myLon);
+				var myLatLng = {lat: myLat, lng: myLon};
+				var map = new google.maps.Map(document.getElementById("map"), {
+					zoom: 10,
+					center: myLatLng
+				});
+
+				for (item of arr) {
+					console.log(item.username+" "+item.msg); // debug
+
+					var contentString = "<h5>"+item.username+"</h5><p>"+item.msg+"</p>"
+
+					// marker
+					marker = new google.maps.Marker({
+						position: {lat: item.lat, lng: item.lon},
+						map: map,
+						title: contentString
+					});
+
+					var infowindow = new google.maps.InfoWindow({
+						content: contentString
+					});					
+
+				    marker.addListener('click', function() {
+				    	infowindow.close();
+				        infowindow.setContent(this.title);
+				        infowindow.open(map, this);
+				     });
+
+				} // for
+
+			}
+
+			/* CLASSE FRIEND
+			============================================================*/
+
+			// classe Friend
+			function Friend(username, msg, lat, lon){
+				this.username=username;
+				this.msg=msg;
+				this.lat=lat;
+				this.lon=lon;
+				console.log("friend"); // debug
+			}
+			// vettore di Friend
+			var arr = [];
+			// metodo che aggiunge un Friend al vettore di Friend
+			function addFriend(friend){
+				arr.push(friend);
+			}
+			
+		</script>
+
+		<style type="text/css">
+			#map{
+				width:100%;
+				height: 450px;
+				background-color: #f5f5f5;
+			}
+			
+			body{
+				padding-top: 60px;
+			}
+		</style>
+
+    </head>
+    <body>
+
+    	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid"><div class="navbar-header">
+
+		<a class="navbar-brand" href="#">GeoPost > Map</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+	       	<span class="icon-bar"></span>
+	       	<span class="icon-bar"></span>
+	    	<span class="icon-bar"></span>
+	    </button>
+		</div>
+
+		<div class="navbar-collapse collapse" id="navbar-main">
+		    <ul class="nav navbar-nav">
+
+		    	<li><button onclick="window.location.href='map.html'" class="btn btn-primary btn-block active"><h4>Map <span class="glyphicon glyphicon-globe" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='list.html'" class="btn btn-primary btn-block"><h4>List <span class="glyphicon glyphicon-tasks" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='post.html'" class="btn btn-primary btn-block"><h4>Post <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='add.html'" class="btn btn-primary btn-block"><h4>Add <span class="glyphicon glyphicon-search" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='profile.html'" class="btn btn-primary btn-block"><h4>Profile <span class="glyphicon glyphicon-user" aria-hidden="true"></span></h4></button></li>
+		    	
+		    </ul>
+		</div>
+
+		</div></nav>
+
+		<div class="container-fluid">
+	
+			<div id="map">Caricamento della mappa...</div>
+
+		</div>
+
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKNYNx2KTbuIjJ49faWy90x0Pq7m8p1Ik&callback=myMap"></script>
+        
+    </body>
+</html>

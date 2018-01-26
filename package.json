@@ -1,0 +1,34 @@
+{
+  "name": "geopost",
+  "displayName": "GeoPost",
+  "version": "1.0.0",
+  "description": "Yolo App.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Roberto Pinotti",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "cordova-android": "^6.3.0",
+    "cordova-browser": "^5.0.1",
+    "cordova-plugin-device": "^2.0.1",
+    "cordova-plugin-device-motion": "^1.2.5",
+    "cordova-plugin-device-orientation": "^1.0.7",
+    "cordova-plugin-geolocation": "^4.0.1",
+    "cordova-plugin-whitelist": "^1.3.3"
+  },
+  "cordova": {
+    "plugins": {
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-geolocation": {},
+      "cordova-plugin-device": {},
+      "cordova-plugin-device-motion": {},
+      "cordova-plugin-device-orientation": {}
+    },
+    "platforms": [
+      "browser",
+      "android"
+    ]
+  }
+}

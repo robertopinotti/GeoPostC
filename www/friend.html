@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <title>Friend | GeoPost</title>
+
+        <script type="text/javascript" src="cordova.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="https://bootswatch.com/3/united/bootstrap.css">
+
+		<script type="text/javascript">
+
+			var nome_utente;
+
+			var session_id;
+
+		    /* CLASSE FRIEND + SORTING
+			============================================================*/
+
+			// classe Friend
+			function Friend(timestamp, value){
+				this.timestamp=timestamp;
+				this.value=value;
+				// console.log("friend"); // debug
+			}
+			// vettore di Friend
+			var arr = [];
+			// metodo che aggiunge un Friend al vettore di Friend
+			function addFriend(friend){
+				arr.push(friend);
+			}
+
+			// stampo a schermo i risultati
+			var myString="";
+
+			function print(){
+				for (item of arr) {
+					myString = myString + "<li class='list-group-item'> <h2>"+item.value+"</h2> <p class='destra'>"+item.timestamp+"</p> </li>";
+
+				} // for
+
+				$("#myDiv").html(myString);
+			} // function
+
+			/* AJAX
+			============================================================*/
+
+			function ajax(){
+
+				console.log("ajax");
+
+				$.ajax({
+					// https://ewserver.di.unimi.it/mobicomp/geopost/followed?session_id=SESSION_ID&callback=callback
+					url : "https://ewserver.di.unimi.it/mobicomp/geopost/history?session_id="+session_id+"&username="+nome_utente+"&callback=callback",
+					success : function(result) {
+
+						numero_elementi = 0;
+						contenuto_risposta = "";
+
+						for (item of result.history) {
+								// console.log(item);
+								numero_elementi++;
+								contenuto_risposta+=item.timestamp+" "+item.value+" ";
+
+								//console.log("item.timestamp: "+item.timestamp);
+								//console.log("item.value: "+item.value);
+
+								var friend = new Friend(item.timestamp, item.value);
+								addFriend(friend);
+						}
+						console.log("esameMC. Contenuto: "+contenuto_risposta);
+						console.log("esameMC. Numero di post: "+numero_elementi);
+						
+						print();
+
+					},
+					error : function(req, status, err){
+
+						alert("Errore "+req+" "+status+" "+err);
+
+						// req: tutto l'errore
+						// status: stampa error
+						// err: stampa Bad Request
+					}
+				}); // ajax
+
+			} // function
+
+			/* DOCUMENT READY
+			============================================================*/
+
+			$(document).ready(function(){
+
+				session_id = localStorage.getItem("session_id");
+				console.log("session_id: "+session_id);
+
+				ajax();
+
+			});
+
+			/* PARSE URL
+			============================================================*/
+
+			function getFromUrl() {
+				// console.log("getFromUrl");
+				var url, v;
+				url = document.location.href;
+				v = url.split("?");
+				// console.log(v[1]);
+				nome_utente = v[1];
+				$("#nome_utente").html("<h1>"+v[1]+"</h1>");
+			}	
+
+		</script>
+
+		<style type="text/css">
+			#fix{
+				width:100%;
+			    height:450px;
+			    overflow-y: scroll;
+			    background-color: #f5f5f5;
+			}
+			body{
+				padding-top: 60px;
+			}
+			.destra {
+				text-align: right;
+			}
+
+		</style>
+
+    </head>
+    <body onload="getFromUrl()">
+
+    	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid"><div class="navbar-header">
+
+		<a class="navbar-brand" href="#">GeoPost > Friend</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+	       	<span class="icon-bar"></span>
+	       	<span class="icon-bar"></span>
+	    	<span class="icon-bar"></span>
+	    </button>
+		</div>
+
+		<div class="navbar-collapse collapse" id="navbar-main">
+		    <ul class="nav navbar-nav">
+
+		    	<li><button onclick="window.location.href='map.html'" class="btn btn-primary btn-block "><h4>Map <span class="glyphicon glyphicon-globe" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='list.html'" class="btn btn-primary btn-block active"><h4>List <span class="glyphicon glyphicon-tasks" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='post.html'" class="btn btn-primary btn-block"><h4>Post <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='add.html'" class="btn btn-primary btn-block"><h4>Add <span class="glyphicon glyphicon-search" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='profile.html'" class="btn btn-primary btn-block"><h4>Profile <span class="glyphicon glyphicon-user" aria-hidden="true"></span></h4></button></li>
+		    	
+		    </ul>
+		</div>
+
+		</div></nav>
+
+		<div class="container-fluid">
+
+			<div id="nome_utente">loading...</div>
+
+			<div id="fix">
+				<ul class="list-group">
+					<div id="myDiv">loading...</div>
+				</ul>
+			</div>
+
+		</div>
+        
+    </body>
+</html>

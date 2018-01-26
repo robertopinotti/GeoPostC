@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <title>Post | GeoPost</title>
+
+        <script type="text/javascript" src="cordova.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="https://bootswatch.com/3/united/bootstrap.css">
+
+		<script type="text/javascript">
+
+			var lat, lon;
+
+			/* POSIZIONE
+			============================================================*/
+
+			// Wait for device API libraries to load
+		    document.addEventListener("deviceready", onDeviceReady, false);
+
+		    var watchID = null;
+
+		    // device APIs are available
+		    function onDeviceReady() {
+		    	console.log("onDeviceReady()");
+		        // Throw an error if no update is received every 30 seconds
+		        var options = { timeout: 30000 };
+		        watchID = navigator.geolocation.watchPosition(onSuccess, onError, options);
+		    }
+
+		    // onSuccess Geolocation
+		    function onSuccess(position) {
+		    	console.log("onSuccess()");
+
+		    	lat = position.coords.latitude;
+		    	lon = position.coords.longitude;
+
+		    	console.log("lat: "+lat+" lon:"+lon);
+
+		    	myMap();
+
+		    }
+
+		    // onError Callback receives a PositionError object
+		    function onError(error) {
+		    	console.log("onError()");
+		        alert('code: '    + error.code    + '\n' +
+		              'message: ' + error.message + '\n');
+		    }
+
+		    /* MAPPA
+			============================================================*/
+
+			function myMap(){
+				console.log("myMap"); // debug
+				
+				var marker;
+
+				// map
+				var myLatLng = {lat: lat, lng: lon};
+				var map = new google.maps.Map(document.getElementById("map"), {
+					zoom: 15,
+					center: myLatLng
+				});
+
+				// marker
+				marker = new google.maps.Marker({
+					position: {lat: lat, lng: lon},
+					map: map
+				});
+
+			}
+
+		    /* DOCUMENT READY
+			============================================================*/
+
+			$(document).ready(function(){
+
+				var session_id = localStorage.getItem("session_id");
+				console.log("session_id: "+session_id);
+
+				$("#button").click(function(){
+
+					console.log("button"); // debug
+
+					msg = $("#msg").val();
+
+					if (msg==""){
+						alert("Devi inserire un messaggio!");
+						exit();
+					}
+
+					/* AJAX
+					============================================================*/
+
+					console.log("https://ewserver.di.unimi.it/mobicomp/geopost/status_update?session_id="+session_id+"&message="+msg+"&lat="+lat+"&lon="+lon+"&callback=callback");
+
+					$.ajax({
+							
+						url : "https://ewserver.di.unimi.it/mobicomp/geopost/status_update?session_id="+session_id+"&message="+msg+"&lat="+lat+"&lon="+lon+"&callback=callback",
+						success : function(result) {
+							
+							alert("Messaggio inviato!");
+								
+						},
+						error : function(req, status, err){
+
+							alert("Errore: controlla la connessione a internet");
+
+							// req: tutto l'errore
+							// status: stampa error
+							// err: stampa Bad Request
+						}
+					}); // ajax
+
+				}); // button
+
+			}); // ready
+
+		</script>
+
+		<style type="text/css">
+			#map{
+				width:100%;
+				height: 250px;
+				background-color: #f5f5f5;
+			}
+			@media (min-width: 799px) {
+				#map {
+					height: 150px;
+					background-color: ;
+				}
+			}
+			body{
+				padding-top: 60px;
+			}
+		</style>
+
+    </head>
+    <body>
+
+    	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid"><div class="navbar-header">
+
+		<a class="navbar-brand" href="#">GeoPost > Post</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+	       	<span class="icon-bar"></span>
+	       	<span class="icon-bar"></span>
+	    	<span class="icon-bar"></span>
+	    </button>
+		</div>
+
+		<div class="navbar-collapse collapse" id="navbar-main">
+		    <ul class="nav navbar-nav">
+
+		    	<li><button onclick="window.location.href='map.html'" class="btn btn-primary btn-block "><h4>Map <span class="glyphicon glyphicon-globe" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='list.html'" class="btn btn-primary btn-block "><h4>List <span class="glyphicon glyphicon-tasks" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='post.html'" class="btn btn-primary btn-block active"><h4>Post <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='add.html'" class="btn btn-primary btn-block"><h4>Add <span class="glyphicon glyphicon-search" aria-hidden="true"></span></h4></button></li>
+
+		    	<li><button onclick="window.location.href='profile.html'" class="btn btn-primary btn-block"><h4>Profile <span class="glyphicon glyphicon-user" aria-hidden="true"></span></h4></button></li>
+		    	
+		    </ul>
+		</div>
+
+		</div></nav>
+
+		<div class="container-fluid">
+
+			<div class="form-group">
+		
+				<label>messagge</label>
+		        <input class="form-control" type="text-area" id="msg" placeholder="enter a messagge" required=""> <br/>
+
+		        <div id="map">loading map...</div><br/>
+
+				<button id="button" class="btn btn-block btn-primary btn-lg">send message</button> <br/>
+
+		    </div>
+
+		</div>
+
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKNYNx2KTbuIjJ49faWy90x0Pq7m8p1Ik&callback=myMap"></script>
+        
+    </body>
+</html>
